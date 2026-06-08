@@ -1,0 +1,31 @@
+# .github/workflows/gittuf-verify.yml
+#
+# Verifies that updates to `main` follow the gittuf policy, independent of
+# GitHub's own branch protection. Modeled on gittuf's own gittuf-verify.yml.
+#
+# Requires that the gittuf namespaces (refs/gittuf/*) have already been pushed
+# to the repository — `gittuf clone` fetches them automatically.
+
+name: gittuf Verification
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  gittuf-verify:
+    # IMPORTANT: while testing on your fork, set this to your fork's slug,
+    # e.g. 'Marc-cn/lind-wasm'. Upstream this becomes 'Lind-Project/lind-wasm'.
+    # If this slug doesn't match the repo, the job is silently skipped.
+    if: github.repository == 'Marc-cn/lind-wasm'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install gittuf
+        # Pin to a commit you trust; check gittuf/gittuf-installer for the latest.
+        uses: gittuf/gittuf-installer@fe9ac76ca1aa34dfebacfdb3e5a7b31bfbff1f1c
+
+      - name: Clone and verify
+        run: |
+          gittuf clone "https://github.com/${{ github.repository }}"
+          cd lind-wasm
+          gittuf verify-ref main --verbose
